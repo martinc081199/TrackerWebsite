@@ -6,7 +6,6 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
-// ----------------- HOME PAGE: FORM -----------------
 app.MapGet("/", () =>
 {
     var html = @"<!DOCTYPE html>
@@ -14,47 +13,51 @@ app.MapGet("/", () =>
 <head>
     <title>Weekly Step Tracker</title>
 </head>
-<body style='font-family: Arial, sans-serif; background-color:#f5f5f5;'>
-    <div style='max-width: 480px; margin: 40px auto; padding: 20px; background:white; border-radius:8px; box-shadow:0 0 8px rgba(0,0,0,0.1);'>
-        <h1 style='text-align:center;'>Weekly Step Tracker</h1>
+<body style='font-family: Arial, sans-serif; background:#f5f5f5;'>
+    <div style='max-width:480px; margin:40px auto; padding:20px; background:white; border-radius:6px; box-shadow:0 0 6px rgba(0,0,0,0.15);'>
+        <h1 style='text-align:center; margin-bottom:10px;'>Weekly Step Tracker</h1>
+        <p style='font-size:14px; color:#555;'>
+            Enter your steps for each day and see your weekly average.
+        </p>
 
-        <form method='post' action='/result' style='margin-top:20px;'>
+        <form method='post' action='/result' style='margin-top:15px;'>
             <label>Your name:</label><br/>
-            <input type='text' name='name' style='width:100%; padding:6px; margin-bottom:10px;' /><br/>
+            <input type='text' name='name' style='width:100%; padding:6px; margin:4px 0 10px 0;' /><br/>
 
             <label>Email:</label><br/>
-            <input type='email' name='email' style='width:100%; padding:6px; margin-bottom:10px;' /><br/>
+            <input type='email' name='email' style='width:100%; padding:6px; margin:4px 0 10px 0;' /><br/>
 
             <label>User ID:</label><br/>
-            <input type='text' name='userid' style='width:100%; padding:6px; margin-bottom:15px;' /><br/>
+            <input type='text' name='userid' style='width:100%; padding:6px; margin:4px 0 12px 0;' /><br/>
 
             <label>Monday steps:</label><br/>
-            <input type='text' name='mon' style='width:100%; padding:6px; margin-bottom:8px;' /><br/>
+            <input type='text' name='mon' style='width:100%; padding:6px; margin-bottom:6px;' /><br/>
 
             <label>Tuesday steps:</label><br/>
-            <input type='text' name='tue' style='width:100%; padding:6px; margin-bottom:8px;' /><br/>
+            <input type='text' name='tue' style='width:100%; padding:6px; margin-bottom:6px;' /><br/>
 
             <label>Wednesday steps:</label><br/>
-            <input type='text' name='wed' style='width:100%; padding:6px; margin-bottom:8px;' /><br/>
+            <input type='text' name='wed' style='width:100%; padding:6px; margin-bottom:6px;' /><br/>
 
             <label>Thursday steps:</label><br/>
-            <input type='text' name='thu' style='width:100%; padding:6px; margin-bottom:8px;' /><br/>
+            <input type='text' name='thu' style='width:100%; padding:6px; margin-bottom:6px;' /><br/>
 
             <label>Friday steps:</label><br/>
-            <input type='text' name='fri' style='width:100%; padding:6px; margin-bottom:8px;' /><br/>
+            <input type='text' name='fri' style='width:100%; padding:6px; margin-bottom:6px;' /><br/>
 
             <label>Saturday steps:</label><br/>
-            <input type='text' name='sat' style='width:100%; padding:6px; margin-bottom:8px;' /><br/>
+            <input type='text' name='sat' style='width:100%; padding:6px; margin-bottom:6px;' /><br/>
 
             <label>Sunday steps:</label><br/>
-            <input type='text' name='sun' style='width:100%; padding:6px; margin-bottom:15px;' /><br/>
+            <input type='text' name='sun' style='width:100%; padding:6px; margin-bottom:12px;' /><br/>
 
-            <label>
+            <label style='font-size:13px;'>
                 <input type='checkbox' name='sendemail' value='yes' />
-                Email me a summary of my week (demo only)
+                Email me a summary (demo only)
             </label><br/><br/>
 
-            <button type='submit' style='width:100%; padding:10px; background:#0078d4; color:white; border:none; border-radius:4px; cursor:pointer;'>
+            <button type='submit' 
+                    style='width:100%; padding:8px; background:#0078d4; color:white; border:none; border-radius:4px; cursor:pointer;'>
                 Calculate weekly average
             </button>
         </form>
@@ -65,110 +68,108 @@ app.MapGet("/", () =>
     return Results.Content(html, "text/html");
 });
 
-// ----------------- RESULT PAGE -----------------
+
 app.MapPost("/result", async (HttpRequest request) =>
 {
     var form = await request.ReadFormAsync();
 
-    // Build user object
-    var tracker = new User();
-    tracker.Name = form["name"].ToString();
-    tracker.Email = form["email"].ToString();
+    var user = new User();
+    user.Name  = form["name"].ToString();
+    user.Email = form["email"].ToString();
 
-    var userIdString = form["userid"].ToString();
-    if (!int.TryParse(userIdString, out tracker.UserId))
+    var userIdText = form["userid"].ToString();
+    if (!int.TryParse(userIdText, out user.UserId))
     {
-        tracker.UserId = 0; // default if invalid
+        user.UserId = 0; 
     }
 
-    if (string.IsNullOrWhiteSpace(tracker.Name))
+    if (string.IsNullOrWhiteSpace(user.Name))
     {
-        tracker.Name = "Unknown";
+        user.Name = "Unknown";
     }
 
-    // Read weekly steps
-    int[] weeklyArray = new int[7];
+    // Read steps for each day
+    int[] weeklySteps = new int[7];
 
-    int ParseSteps(string key)
+    int GetSteps(string key)
     {
         var value = form[key].ToString();
         return int.TryParse(value, out int steps) ? steps : 0;
     }
 
-    weeklyArray[0] = ParseSteps("mon");
-    weeklyArray[1] = ParseSteps("tue");
-    weeklyArray[2] = ParseSteps("wed");
-    weeklyArray[3] = ParseSteps("thu");
-    weeklyArray[4] = ParseSteps("fri");
-    weeklyArray[5] = ParseSteps("sat");
-    weeklyArray[6] = ParseSteps("sun");
+    weeklySteps[0] = GetSteps("mon");
+    weeklySteps[1] = GetSteps("tue");
+    weeklySteps[2] = GetSteps("wed");
+    weeklySteps[3] = GetSteps("thu");
+    weeklySteps[4] = GetSteps("fri");
+    weeklySteps[5] = GetSteps("sat");
+    weeklySteps[6] = GetSteps("sun");
 
     int total = 0;
-    foreach (int step in weeklyArray)
+    foreach (var s in weeklySteps)
     {
-        total += step;
+        total += s;
     }
 
-    tracker.AvgSteps = total / 7;
+    user.AvgSteps = total / 7;
+    string recommendation = user.GetRecommendationText();
 
-    string recommendation = tracker.GetRecommendationText();
+    bool sendEmail = form["sendemail"] == "yes";
 
-    bool sendEmailRequested = form["sendemail"] == "yes";
-
-    var html = $@"<!DOCTYPE html>
+    var resultHtml = $@"<!DOCTYPE html>
 <html>
 <head>
     <title>Weekly Step Result</title>
 </head>
-<body style='font-family: Arial, sans-serif; background-color:#f5f5f5;'>
-    <div style='max-width: 480px; margin: 40px auto; padding: 20px; background:white; border-radius:8px; box-shadow:0 0 8px rgba(0,0,0,0.1);'>
-        <h1>Results for {tracker.Name}</h1>
+<body style='font-family: Arial, sans-serif; background:#f5f5f5;'>
+    <div style='max-width:480px; margin:40px auto; padding:20px; background:white; border-radius:6px; box-shadow:0 0 6px rgba(0,0,0,0.15);'>
+        <h1>Results for {user.Name}</h1>
 
-        <p><strong>User ID:</strong> {tracker.UserId}</p>
-        <p><strong>Email:</strong> {tracker.Email}</p>
+        <p><strong>User ID:</strong> {user.UserId}</p>
+        <p><strong>Email:</strong> {user.Email}</p>
 
         <p><strong>Total weekly steps:</strong> {total}</p>
-        <p><strong>Average daily steps:</strong> {tracker.AvgSteps}</p>
+        <p><strong>Average per day:</strong> {user.AvgSteps}</p>
         <p><strong>Recommendation:</strong> {recommendation}</p>";
 
-    if (sendEmailRequested && !string.IsNullOrWhiteSpace(tracker.Email))
+    if (sendEmail && !string.IsNullOrWhiteSpace(user.Email))
     {
-        html += $@"
-        <p style='margin-top:15px; color:green;'>
-            Demo: a summary would be sent to <strong>{tracker.Email}</strong>.
+        resultHtml += $@"
+        <p style='margin-top:12px; color:green; font-size:13px;'>
+            (Demo) A summary would be emailed to: <strong>{user.Email}</strong>
         </p>";
     }
 
-    html += @"
-        <p style='margin-top:20px;'>
-            <a href='/' style='text-decoration:none; color:#0078d4;'>Go back</a>
+    resultHtml += @"
+        <p style='margin-top:18px;'>
+            <a href='/' style='color:#0078d4; text-decoration:none;'>Go back</a>
         </p>
     </div>
 </body>
 </html>";
 
-    return Results.Content(html, "text/html");
+    return Results.Content(resultHtml, "text/html");
 });
 
 app.Run();
 
-// ----------------- USER CLASS -----------------
+// Simple user model used by the app
 class User
 {
-    public string Name = "";
+    public string Name  = "";
     public string Email = "";
-    public int UserId;
-    public int AvgSteps;
+    public int    UserId;
+    public int    AvgSteps;
 
     public string GetRecommendationText()
     {
         if (AvgSteps < 10000)
         {
-            return "Aim for around 10,000 steps per day with our supportive features.";
+            return "Try to work towards around 10,000 steps per day.";
         }
         else
         {
-            return "You are very active. Consider advanced tracking features.";
+            return "You're already very active, consider more advanced tracking goals.";
         }
     }
 }
