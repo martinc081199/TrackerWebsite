@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TrackerWebsite")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4cc42d2c65560ccfac848ff59245ac4662ed9a83")]
 [assembly: System.Reflection.AssemblyProductAttribute("TrackerWebsite")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TrackerWebsite")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

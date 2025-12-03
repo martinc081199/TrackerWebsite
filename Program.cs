@@ -164,11 +164,11 @@ class User
     {
         if (AvgSteps < 10000)
         {
-            return "Aim for around 10,000 steps per day with supportive features like reminders and gentle goals.";
+            return "Aim for around 10,000 steps per day with our supportive features.";
         }
         else
         {
-            return "You are very active. Consider advanced tracking features such as performance analytics and challenges.";
+            return "You are very active. Consider advanced tracking features.";
         }
     }
 }
