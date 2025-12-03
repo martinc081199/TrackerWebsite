@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "TrackerWebsite/1.0.0": {
+        "runtime": {
+          "TrackerWebsite.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "TrackerWebsite/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
